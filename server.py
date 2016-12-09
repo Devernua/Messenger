@@ -9,6 +9,7 @@ from Crypto.Util.number import GCD
 from Crypto.Hash import SHA
 
 clients = {}
+
 users = {"Anya": "123", "Titto": "1211"}
 
 ElGamalKey = {
