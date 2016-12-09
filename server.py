@@ -71,7 +71,6 @@ class MessangerServer(asyncore.dispatcher):
             sock, addr = pair
             print('Incoming connection from %s' % repr(addr))
             MessageHandler(sock)
-            # clients.append(EchoHandler(sock))
 
 
 server = MessangerServer('', 7777)
