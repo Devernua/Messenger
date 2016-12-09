@@ -2,6 +2,7 @@ import asyncore
 import socket
 import json
 import sys
+from .diffiehellman.diffiehellman import DiffieHellman
 
 
 class MessangerClient(asyncore.dispatcher):
@@ -11,6 +12,14 @@ class MessangerClient(asyncore.dispatcher):
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connect((host, port))
         self.buffer = json.dumps({'action': 'auth', 'data':{'login': login, 'pass': password}}).encode('utf-8')
+        self.keys = DiffieHellman()
+        self.keys.generate_public_key()
+
+        print("private key: ")
+        print(self.keys.private_key)
+
+        print("public key: ")
+        print(self.keys.public_key)
 
     def handle_connect(self):
         pass
