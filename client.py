@@ -2,7 +2,24 @@ import asyncore
 import socket
 import json
 import sys
-from .diffiehellman.diffiehellman import DiffieHellman
+#from .diffiehellman.diffiehellman import DiffieHellman
+from Crypto import Random
+from Crypto.Random import random
+from Crypto.PublicKey import ElGamal
+from Crypto.Util.number import GCD
+from Crypto.Hash import SHA
+
+print("WAT")
+
+key = ElGamal.generate(256, Random.new().read)
+
+print("WAT")
+
+print(key)
+print(key.x)
+print(key.y)
+print(key.g)
+print(key.p)
 
 
 class MessangerClient(asyncore.dispatcher):
@@ -52,5 +69,5 @@ password = str(input())
 client = MessangerClient('', 7777, login, password)
 CmdlineClient(client, sys.stdin)
 
-asyncore.loop()
+a#syncore.loop()
 
