@@ -2,23 +2,56 @@ import asyncore
 import socket
 import json
 
-clients = []
+clients = {}
+
+users = {}
+users["Anya"] = "123"
+users["Titto"] = "1211"
 
 
 class MessageHandler(asyncore.dispatcher_with_send):
+    def __init__(self, sock):
+        asyncore.dispatcher_with_send.__init__(self, sock)
+        self.name = 0
+
     def handle_read(self):
         data = self.recv(4096).decode('utf-8')
         if data:
-            print(data)
+            print("loginfo: " + data)
             j = json.loads(data)
-            d = {}
-            self.name = j["name"]
-            d["handler"] = self
-            clients.append(d)
+            #d["handler"] = self
+            #clients[self.name] = self
+            if j["action"] == "register":
+                if not j["login"] in users.keys():
+                    try:
+                        users[j["login"]] = j["pass"]
+                        self.name = j["login"]
+                        clients[self.name] = self
+                        self.send(json.dumps({"action": "register", "status": "AUTH_OK"}).encode())
+                    except Exception:
+                        self.send(json.dumps({"action": "register", "status": "AUTH_ERR"}).encode())
+                        self.close()
+                else:
+                    self.send(json.dumps({"action": "register", "status": "AUTH_ERR"}).encode())
+                    self.close()
+            elif j["action"] == "auth":
+                if users[j["login"]] == j["pass"]:
+                    self.name = j["login"]
+                    clients[self.name] = self
+                    self.send(json.dumps({"action": "auth", "status": "AUTH_OK"}).encode())
+                else:
+                    self.send(json.dumps({"action": "auth", "status": "AUTH_ERR"}).encode())
+                    self.close()
 
-            for i in clients:
-                print(i["handler"].name)
-                self.send(i["handler"].name.encode() + b'\n')
+            elif j["action"] == "message":
+                clients[j["to"]].send(json.dumps({"action": "message", "from": self.name, "message": j["message"]}).encode())
+            else:
+                print("WATAFA")
+                #WATAFAA
+            #for i in clients:
+             #   print(i["handler"].name)
+              #  self.send(i["handler"].name.encode() + b'\n')
+
                 # print(json)
 
                 # for i in range(len(clients)):
