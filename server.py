@@ -22,10 +22,10 @@ class MessageHandler(asyncore.dispatcher_with_send):
             #d["handler"] = self
             #clients[self.name] = self
             if j["action"] == "register":
-                if not j["login"] in users.keys():
+                if not j["data"]["login"] in users.keys():
                     try:
-                        users[j["login"]] = j["pass"]
-                        self.name = j["login"]
+                        users[j["data"]["login"]] = j["data"]["pass"]
+                        self.name = j["data"]["login"]
                         clients[self.name] = self
                         self.send(json.dumps({"action": "register", "status": "AUTH_OK"}).encode())
                     except Exception:
@@ -35,8 +35,8 @@ class MessageHandler(asyncore.dispatcher_with_send):
                     self.send(json.dumps({"action": "register", "status": "AUTH_ERR"}).encode())
                     self.close()
             elif j["action"] == "auth":
-                if users[j["login"]] == j["pass"]:
-                    self.name = j["login"]
+                if users[j["data"]["login"]] == j["data"]["pass"]:
+                    self.name = j["data"]["login"]
                     clients[self.name] = self
                     self.send(json.dumps({"action": "auth", "status": "AUTH_OK"}).encode())
                 else:
@@ -44,7 +44,7 @@ class MessageHandler(asyncore.dispatcher_with_send):
                     self.close()
 
             elif j["action"] == "message":
-                clients[j["to"]].send(json.dumps({"action": "message", "from": self.name, "message": j["message"]}).encode())
+                clients[j["data"]["to"]].send(json.dumps({"action": "message", "data":{"from": self.name, "message": j["data"]["message"]}}).encode())
             else:
                 print("WATAFA")
                 #WATAFAA

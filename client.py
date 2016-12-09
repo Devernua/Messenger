@@ -10,7 +10,7 @@ class MessangerClient(asyncore.dispatcher):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connect((host, port))
-        self.buffer = json.dumps({'action': 'auth', 'login': login, 'pass': password}).encode('utf-8')
+        self.buffer = json.dumps({'action': 'auth', 'data':{'login': login, 'pass': password}}).encode('utf-8')
 
     def handle_connect(self):
         pass
@@ -35,7 +35,7 @@ class CmdlineClient(asyncore.file_dispatcher):
         self.sender = sender
 
     def handle_read(self):
-        self.sender.buffer += json.dumps({"message": self.recv(1024).decode('utf-8'), "action": "message", "to": "Anya"}).encode()
+        self.sender.buffer += json.dumps({"data": {"message": self.recv(1024).decode('utf-8'), "to": "Anya"}, "action": "message"}).encode()
 
 login = str(input())
 password = str(input())
