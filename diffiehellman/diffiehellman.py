@@ -50,12 +50,16 @@ class DiffieHellman:
     """
 
     def __init__(self,
+                 pub=0,
+                 private=0,
                  group=18,
                  key_length=512):
 
         self.key_length = max(200, key_length)
         self.generator = PRIMES[group]["generator"]
         self.prime = PRIMES[group]["prime"]
+        self.public_key = pub
+        self.private_key = private
 
     def generate_private_key(self):
         """
@@ -65,7 +69,7 @@ class DiffieHellman:
         :rtype: void
         """
         key_length = self.key_length // 8 + 8
-        key = 0
+
 
         try:
             key = int.from_bytes(rng(key_length), byteorder='big')

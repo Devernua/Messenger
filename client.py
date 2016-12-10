@@ -3,24 +3,11 @@ import socket
 import json
 import sys
 #from .diffiehellman.diffiehellman import DiffieHellman
-from Crypto import Random
-from Crypto.Random import random
-from Crypto.PublicKey import ElGamal
-from Crypto.Util.number import GCD
-from Crypto.Hash import SHA
-
-print("WAT")
-
-key = ElGamal.generate(256, Random.new().read)
-
-print("WAT")
-
-print(key)
-print(key.x)
-print(key.y)
-print(key.g)
-print(key.p)
-
+#from Crypto import Random
+#from Crypto.Random import random
+#from Crypto.PublicKey import ElGamal
+#from Crypto.Util.number import GCD
+#from Crypto.Hash import SHA
 
 class MessangerClient(asyncore.dispatcher):
 
@@ -29,14 +16,6 @@ class MessangerClient(asyncore.dispatcher):
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connect((host, port))
         self.buffer = json.dumps({'action': 'auth', 'data':{'login': login, 'pass': password}}).encode('utf-8')
-        self.keys = DiffieHellman()
-        self.keys.generate_public_key()
-
-        print("private key: ")
-        print(self.keys.private_key)
-
-        print("public key: ")
-        print(self.keys.public_key)
 
     def handle_connect(self):
         pass
@@ -69,5 +48,5 @@ password = str(input())
 client = MessangerClient('', 7777, login, password)
 CmdlineClient(client, sys.stdin)
 
-a#syncore.loop()
+asyncore.loop()
 
