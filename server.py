@@ -19,11 +19,18 @@ ElGamalKey = {
     'p': 97876007283895611191945706438217835830283264987363181522362440407719068602587
 }
 
+ElGamalObjKey = ElGamal.construct((ElGamalKey['p'], ElGamalKey['g'], ElGamalKey['y'], ElGamalKey['x']))
+DiffiKey = DiffieHellman()
+DiffiKey.generate_public_key()
+SignR = ''
+SignS = ''
+
 
 class MessageHandler(asyncore.dispatcher_with_send):
     def __init__(self, sock):
         asyncore.dispatcher_with_send.__init__(self, sock)
         self.name = 0
+        self.Key = 0
 
     def handle_read(self):
         data = self.recv(4096).decode('utf-8')
@@ -64,6 +71,14 @@ class MessageHandler(asyncore.dispatcher_with_send):
                     clients[j["data"]["to"]].send(json.dumps({"action": "message", "data":{"from": self.name, "message": j["data"]["message"]}}).encode())
                 except Exception:
                     self.send(json.dumps({"action": "message", "status": "MESSAGE_ERR"}).encode())
+
+            elif j["action"] == "handshake":
+                try:
+                    self.Key = j["data"]["pubkey"]
+                    self.send(json.dumps({"action": "handshake", "data": {"pubkey": str(DiffiKey.public_key), "signR": SignR, "signS": SignS}}).encode())
+                except Exception:
+                    self.send(json.dumps({"action": "handshake", "status": "MESSAGE_ERR"}).encode())
+
             else:
                 print("WATAFA")
 
