@@ -1,7 +1,7 @@
 import asyncore
 import socket
 import json
-from .diffiehellman.diffiehellman import DiffieHellman
+from diffiehellman.diffiehellman import DiffieHellman
 from Crypto import Random
 from Crypto.Random import random
 from Crypto.PublicKey import ElGamal
@@ -10,7 +10,7 @@ from Crypto.Hash import SHA
 
 clients = {}
 
-users = {"Anya": "123", "Titto": "1211"}
+users = {"Anya": "123", "Titto": "1211", "Alice": "123", "Bob": "123"}
 
 ElGamalKey = {
     'x': 39618305357764467552470495913115822425625260473404888117782791806968178497902,
@@ -22,8 +22,12 @@ ElGamalKey = {
 ElGamalObjKey = ElGamal.construct((ElGamalKey['p'], ElGamalKey['g'], ElGamalKey['y'], ElGamalKey['x']))
 DiffiKey = DiffieHellman()
 DiffiKey.generate_public_key()
-SignR = ''
-SignS = ''
+h = SHA.new(str(DiffiKey.public_key).encode()).digest()
+while 1:
+    k = random.StrongRandom().randint(1, ElGamalObjKey.p-1)
+    if GCD(k, ElGamalObjKey.p-1) == 1:
+        break
+(SignR, SignS) = ElGamalObjKey.sign(h, k)
 
 
 class MessageHandler(asyncore.dispatcher_with_send):
