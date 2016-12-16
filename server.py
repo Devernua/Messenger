@@ -39,6 +39,7 @@ class MessageHandler(asyncore.dispatcher_with_send):
         self.name = 0
         self.Key = DiffieHellman()
         self.Key.generate_public_key()
+        #self.aesKey = ''
         #self.difKey = 0
 
     def handle_read(self):

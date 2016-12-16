@@ -111,7 +111,7 @@ class DiffieHellman:
         #_h.update(bytes(shared_secret_as_bytes))
 
         #self.shared_key = _h.hexdigest()
-        self.shared_key = self.shared_secret
+        self.shared_key = int(str(self.shared_secret)[:16])
 
         if echo_return_key is True:
             return self.shared_key
