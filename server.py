@@ -104,9 +104,9 @@ class MessageHandler(asyncore.dispatcher_with_send):
                     self.send(json.dumps({"action": "handshake", "status": "HANDSHAKE_ERR"}).encode())
                 #print(self.Key.public_key)
                 #print(int(str(self.Key.public_key)))
-                print("MY KEY: " + str(self.Key.public_key))
-                print("HIM KEY: " + str(base_str_to_int(j["data"]["pubkey"])))
-                print("SHARED KEY: " + str(self.Key.shared_key))
+                #print("MY KEY: " + str(self.Key.public_key))
+                #print("HIM KEY: " + str(base_str_to_int(j["data"]["pubkey"])))
+                #print("SHARED KEY: " + str(self.Key.shared_key))
                     # self.send(json.dumps({"action": "handshake", "data": {"pubkey": str(DiffiKey.public_key), "signR": SignR, "signS": SignS}}).encode())
                 #except Exception:
                     #self.send(json.dumps({"action": "handshake", "status": "MESSAGE_ERR"}).encode())

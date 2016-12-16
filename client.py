@@ -75,10 +75,11 @@ class CmdlineClient(asyncore.file_dispatcher):
         self.sender = sender
 
     def handle_read(self):
-        #self.recv(1024).decode('utf-8')
+        s = self.recv(1024).decode('utf-8')
+        (to,msg) = s.split(':', 1)
         #TODO:chifer by AES
         #self.sender.buffer += json.dumps({"data": {"pubkey": str(key.public_key)}, "action": "handshake"}).encode()
-        self.sender.buffer += json.dumps({"data": {"message": self.recv(1024).decode('utf-8'), "to": "Anya"}, "action": "message"}).encode('utf-8')
+        self.sender.buffer += json.dumps({"data": {"message": msg, "to": to}, "action": "message"}).encode('utf-8')
 
 login = str(input())
 password = str(input())
