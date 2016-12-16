@@ -71,7 +71,7 @@ class DiffieHellman:
             key = int(hex(rng(key_length)), base=16)
 
         self.__private_key = key
-        print("KEEEEEY: " + str(key))
+        #print("KEEEEEY: " + str(key))
 
     def verify_public_key(self, other_public_key):
         return self.prime - 1 > other_public_key > 2 and pow(other_public_key, (self.prime - 1) // 2, self.prime) == 1
@@ -105,12 +105,13 @@ class DiffieHellman:
                                  self.__private_key,
                                  self.prime)
 
-        shared_secret_as_bytes = self.shared_secret.to_bytes(self.shared_secret.bit_length() // 8 + 1, byteorder='big')
+        #shared_secret_as_bytes = self.shared_secret.to_bytes(self.shared_secret.bit_length() // 8 + 1, byteorder='big')
 
-        _h = sha256()
-        _h.update(bytes(shared_secret_as_bytes))
+        #_h = sha256()
+        #_h.update(bytes(shared_secret_as_bytes))
 
-        self.shared_key = _h.hexdigest()
+        #self.shared_key = _h.hexdigest()
+        self.shared_key = self.shared_secret
 
         if echo_return_key is True:
             return self.shared_key

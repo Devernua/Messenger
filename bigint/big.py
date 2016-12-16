@@ -14,8 +14,11 @@ def unpack_bigint(b):
 
 
 def base_str_to_int(s):
-    return unpack_bigint(base64.b64decode(s))
+    return int(s)
+    #return unpack_bigint(base64.b64decode(s))
+
 
 
 def int_to_base_str(i):
-    return base64.standard_b64encode(bytes(pack_bigint(i))).decode()
+    return str(i)
+    #return base64.standard_b64encode(bytes(pack_bigint(i))).decode()
