@@ -2,12 +2,17 @@ import asyncore
 import socket
 import json
 import sys
-#from .diffiehellman.diffiehellman import DiffieHellman
-#from Crypto import Random
-#from Crypto.Random import random
-#from Crypto.PublicKey import ElGamal
-#from Crypto.Util.number import GCD
-#from Crypto.Hash import SHA
+from diffiehellman.diffiehellman import DiffieHellman
+from Crypto import Random
+from Crypto.Random import random
+from Crypto.PublicKey import ElGamal
+from Crypto.Util.number import GCD
+from Crypto.Hash import SHA
+
+#TODO:remember ELGamalKey
+#key = DiffieHellman()
+#key.generate_public_key()
+#print(key.public_key)
 
 class MessangerClient(asyncore.dispatcher):
 
@@ -15,7 +20,12 @@ class MessangerClient(asyncore.dispatcher):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connect((host, port))
-        self.buffer = json.dumps({'action': 'auth', 'data':{'login': login, 'pass': password}}).encode('utf-8')
+        self.login = login
+        self.password = password
+        self.Key = DiffieHellman()
+        self.Key.generate_public_key()
+        #self.buffer = json.dumps({'action': 'auth', 'data': {'login': login, 'pass': password}}).encode('utf-8')
+        self.buffer = json.dumps({'action': 'handshake', 'data': {'pubkey': str(self.Key.public_key)}}).encode('utf-8')
 
     def handle_connect(self):
         pass
@@ -24,7 +34,20 @@ class MessangerClient(asyncore.dispatcher):
         self.close()
 
     def handle_read(self):
-        print(self.recv(1024).decode('utf-8'))
+        data = self.recv(4024).decode('utf-8')
+        if data:
+            print(data)
+            j = json.loads(data)
+            if (j["action"] == "handshake"):
+                self.Key.generate_shared_secret(int(j["data"]["pubkey"]))
+                print("MY KEY: " + str(self.Key.public_key))
+                print("HIM KEY: " + str(int(j["data"]["pubkey"])))
+                print("SHARED KEY: " + str(self.Key.shared_key))
+                #self.difKey = key.generate_shared_secret(int(j["data"]['pubkey']), echo_return_key=True)
+                #print(self.difKey)
+                #TODO:check al gamal
+                #TODO:cut difkey end chifer by AES
+                self.buffer = json.dumps({'action': 'auth', 'data': {'login': login, 'pass': password}}).encode('utf-8')
 
     def writable(self):
         return len(self.buffer) > 0
@@ -40,7 +63,10 @@ class CmdlineClient(asyncore.file_dispatcher):
         self.sender = sender
 
     def handle_read(self):
-        self.sender.buffer += json.dumps({"data": {"message": self.recv(1024).decode('utf-8'), "to": "Anya"}, "action": "message"}).encode()
+        self.recv(1024).decode('utf-8')
+        #TODO:chifer by AES
+        #self.sender.buffer += json.dumps({"data": {"pubkey": str(key.public_key)}, "action": "handshake"}).encode()
+        self.sender.buffer += json.dumps({"data": {"message": self.recv(1024).decode('utf-8'), "to": "Anya"}, "action": "message"}).encode('utf-8')
 
 login = str(input())
 password = str(input())

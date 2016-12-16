@@ -53,7 +53,7 @@ class DiffieHellman:
                  pub=0,
                  private=0,
                  group=18,
-                 key_length=512):
+                 key_length=256):
 
         self.key_length = max(200, key_length)
         self.generator = PRIMES[group]["generator"]
@@ -92,6 +92,7 @@ class DiffieHellman:
         self.public_key = pow(self.generator,
                               self.private_key,
                               self.prime)
+        return self
 
     @requires_private_key
     def generate_shared_secret(self, other_public_key, echo_return_key=False):
@@ -118,6 +119,7 @@ class DiffieHellman:
         _h.update(bytes(shared_secret_as_bytes))
 
         self.shared_key = _h.hexdigest()
+        #self.shared_key = self.shared_secret
 
         if echo_return_key is True:
             return self.shared_key
