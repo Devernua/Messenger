@@ -4,7 +4,8 @@ import json
 import base64
 from diffiehellman.diffiehellman import DiffieHellman
 from bigint.big import *
-from Crypto.Cipher import AES
+#from Crypto.Cipher import AES
+from AESCipher.AESCipher import AESCipher
 #from Crypto import Random
 #from Crypto.Random import random
 #from Crypto.PublicKey import ElGamal
@@ -40,19 +41,19 @@ class MessageHandler(asyncore.dispatcher_with_send):
         self.name = 0
         self.Key = DiffieHellman()
         self.Key.generate_public_key()
-        self.cipher = 0
+        self.cipher = None
 
     def handle_read(self):
         data = self.recv(4096).decode('utf-8')
         if data:
-            print("loginfo: " + data)
+            #print("loginfo: " + data)
 
-            if self.cipher:
+            if self.cipher is not None:
                 j = json.loads(self.cipher.decrypt(data))
             else:
                 j = json.loads(data)
-
-            if j["action"] == "register":
+            print("loginfo: " + json.dumps(j))
+            if j["action"] == "register" and self.cipher:
                 try:
                     if not j["data"]["login"] in users.keys():
                             users[j["data"]["login"]] = j["data"]["pass"]
@@ -66,12 +67,12 @@ class MessageHandler(asyncore.dispatcher_with_send):
                     self.send(json.dumps({"action": "register", "status": "AUTH_ERR"}).encode())
                     self.close()
 
-            elif j["action"] == "auth":
+            elif j["action"] == "auth" and self.cipher:
                 try:
                     if users[j["data"]["login"]] == j["data"]["pass"]:
                         self.name = j["data"]["login"]
                         clients[self.name] = self
-                        self.send(json.dumps({"action": "auth", "status": "AUTH_OK"}).encode())
+                        self.send(self.cipher.encrypt(json.dumps({"action": "auth", "status": "AUTH_OK"})))
                     else:
                         self.send(json.dumps({"action": "auth", "status": "AUTH_ERR"}).encode())
                         self.close()
@@ -82,7 +83,7 @@ class MessageHandler(asyncore.dispatcher_with_send):
             elif j["action"] == "test":
                 s = j["data"].encode()
                 print(s)
-            elif j["action"] == "message":
+            elif j["action"] == "message" and self.cipher:
                 try:
                     clients[j["data"]["to"]].send(json.dumps({"action": "message", "data": {"from": self.name, "message": j["data"]["message"]}}).encode())
                 except Exception:
@@ -96,8 +97,9 @@ class MessageHandler(asyncore.dispatcher_with_send):
                     self.send(json.dumps({"action": "handshake", "status": "HANDSHAKE_OK", "data": {"pubkey": int_to_base_str(self.Key.public_key)}}).encode())
                     print("pubkey: " + str(base_str_to_int(j["data"]["pubkey"])))
                     self.Key.generate_shared_secret(base_str_to_int(j["data"]["pubkey"]))
-                    self.cipher = AES.new(str(self.Key.shared_key).encode(), AES.MODE_CFB)
-                except Exception:
+                    self.cipher = AESCipher(str(self.Key.shared_key).encode())
+                except Exception as e:
+                    print("ERROR: ", e)
                     self.send(json.dumps({"action": "handshake", "status": "HANDSHAKE_ERR"}).encode())
                 #print(self.Key.public_key)
                 #print(int(str(self.Key.public_key)))

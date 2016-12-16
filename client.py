@@ -4,6 +4,7 @@ import json
 import sys
 from diffiehellman.diffiehellman import DiffieHellman
 from bigint.big import *
+from AESCipher.AESCipher import AESCipher
 from Crypto import Random
 from Crypto.Random import random
 from Crypto.PublicKey import ElGamal
@@ -28,6 +29,7 @@ class MessangerClient(asyncore.dispatcher):
         self.Key.generate_public_key()
         #self.buffer = json.dumps({'action': 'auth', 'data': {'login': login, 'pass': password}}).encode('utf-8')
         self.buffer = json.dumps({'action': 'handshake', 'data': {'pubkey': int_to_base_str(self.Key.public_key)}}).encode()
+        self.cipher = None
 
     def handle_connect(self):
         pass
@@ -38,13 +40,19 @@ class MessangerClient(asyncore.dispatcher):
     def handle_read(self):
         data = self.recv(4024).decode('utf-8')
         if data:
-            print(data)
-            j = json.loads(data)
+            #print(data)
+            if self.cipher is not None:
+                j = json.loads(self.cipher.decrypt(data))
+            else:
+                j = json.loads(data)
+            print(j)
+            #j = json.loads(data)
             if j["action"] == "handshake":
                 self.Key.generate_shared_secret(base_str_to_int(j["data"]["pubkey"]))
-                print("MY KEY: " + str(self.Key.public_key))
-                print("HIM KEY: " + str(base_str_to_int(j["data"]["pubkey"])))
-                print("SHARED KEY: " + str(self.Key.shared_key))
+                #print("MY KEY: " + str(self.Key.public_key))
+                #print("HIM KEY: " + str(base_str_to_int(j["data"]["pubkey"])))
+                #print("SHARED KEY: " + str(self.Key.shared_key))
+                self.cipher = AESCipher(str(self.Key.shared_key).encode())
                 #TODO:check al gamal
                 #TODO:cut difkey end chifer by AES
                 self.buffer = json.dumps({'action': 'auth', 'data': {'login': login, 'pass': password}}).encode('utf-8')
@@ -53,8 +61,12 @@ class MessangerClient(asyncore.dispatcher):
         return len(self.buffer) > 0
 
     def handle_write(self):
-        sent = self.send(self.buffer)
-        self.buffer = self.buffer[sent:]
+        if self.cipher is not None:
+            sent = self.send(self.cipher.encrypt(self.buffer.decode()))
+            self.buffer = self.buffer[sent:]
+        else:
+            sent = self.send(self.buffer)
+            self.buffer = self.buffer[sent:]
 
 
 class CmdlineClient(asyncore.file_dispatcher):
