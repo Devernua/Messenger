@@ -3,6 +3,7 @@ import socket
 import json
 import base64
 from diffiehellman.diffiehellman import DiffieHellman
+from bigint.big import *
 #from Crypto import Random
 #from Crypto.Random import random
 #from Crypto.PublicKey import ElGamal
@@ -89,15 +90,15 @@ class MessageHandler(asyncore.dispatcher_with_send):
                 #self.Key = int(j["data"]["pubkey"])
                 #TODO: SUBSCRIBE and SIGN a PubKEY
                 try:
-                    self.send(json.dumps({"action": "handshake", "status": "HANDSHAKE_OK", "data": {"pubkey": str(base64.b64encode(bytes(str(self.Key.public_key), 'ascii')))}}).encode())
-                    print("pubkey: " + str(int(base64.b64decode(j["data"]["pubkey"]))))
-                    self.Key.generate_shared_secret(int(j["data"]["pubkey"]))
+                    self.send(json.dumps({"action": "handshake", "status": "HANDSHAKE_OK", "data": {"pubkey": int_to_base_str(self.Key.public_key)}}).encode())
+                    print("pubkey: " + str(base_str_to_int(j["data"]["pubkey"])))
+                    self.Key.generate_shared_secret(base_str_to_int(j["data"]["pubkey"]))
                 except Exception:
                     self.send(json.dumps({"action": "handshake", "status": "HANDSHAKE_ERR"}).encode())
                 #print(self.Key.public_key)
                 #print(int(str(self.Key.public_key)))
                 print("MY KEY: " + str(self.Key.public_key))
-                print("HIM KEY: " + str(int(base64.b64decode(j["data"]["pubkey"]))))
+                print("HIM KEY: " + str(base_str_to_int(j["data"]["pubkey"])))
                 print("SHARED KEY: " + str(self.Key.shared_key))
                     # self.send(json.dumps({"action": "handshake", "data": {"pubkey": str(DiffiKey.public_key), "signR": SignR, "signS": SignS}}).encode())
                 #except Exception:

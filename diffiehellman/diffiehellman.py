@@ -49,7 +49,7 @@ class DiffieHellman:
     """
 
     def __init__(self,
-                 group=18,
+                 group=5,
                  key_length=200):
 
         self.key_length = max(200, key_length)
@@ -71,6 +71,7 @@ class DiffieHellman:
             key = int(hex(rng(key_length)), base=16)
 
         self.__private_key = key
+        print("KEEEEEY: " + str(key))
 
     def verify_public_key(self, other_public_key):
         return self.prime - 1 > other_public_key > 2 and pow(other_public_key, (self.prime - 1) // 2, self.prime) == 1

@@ -3,6 +3,7 @@ import socket
 import json
 import sys
 from diffiehellman.diffiehellman import DiffieHellman
+from bigint.big import *
 from Crypto import Random
 from Crypto.Random import random
 from Crypto.PublicKey import ElGamal
@@ -26,7 +27,7 @@ class MessangerClient(asyncore.dispatcher):
         self.Key = DiffieHellman()
         self.Key.generate_public_key()
         #self.buffer = json.dumps({'action': 'auth', 'data': {'login': login, 'pass': password}}).encode('utf-8')
-        self.buffer = json.dumps({'action': 'handshake', 'data': {'pubkey': str(base64.b64encode(bytes(str(self.Key.public_key), 'ascii')))}}).encode()
+        self.buffer = json.dumps({'action': 'handshake', 'data': {'pubkey': int_to_base_str(self.Key.public_key)}}).encode()
 
     def handle_connect(self):
         pass
@@ -39,10 +40,10 @@ class MessangerClient(asyncore.dispatcher):
         if data:
             print(data)
             j = json.loads(data)
-            if (j["action"] == "handshake"):
-                self.Key.generate_shared_secret(int(base64.b64decode(j["data"]["pubkey"])))
+            if j["action"] == "handshake":
+                self.Key.generate_shared_secret(base_str_to_int(j["data"]["pubkey"]))
                 print("MY KEY: " + str(self.Key.public_key))
-                print("HIM KEY: " + str(int(base64.b64decode(j["data"]["pubkey"]))))
+                print("HIM KEY: " + str(base_str_to_int(j["data"]["pubkey"])))
                 print("SHARED KEY: " + str(self.Key.shared_key))
                 #TODO:check al gamal
                 #TODO:cut difkey end chifer by AES
@@ -62,7 +63,7 @@ class CmdlineClient(asyncore.file_dispatcher):
         self.sender = sender
 
     def handle_read(self):
-        self.recv(1024).decode('utf-8')
+        #self.recv(1024).decode('utf-8')
         #TODO:chifer by AES
         #self.sender.buffer += json.dumps({"data": {"pubkey": str(key.public_key)}, "action": "handshake"}).encode()
         self.sender.buffer += json.dumps({"data": {"message": self.recv(1024).decode('utf-8'), "to": "Anya"}, "action": "message"}).encode('utf-8')
