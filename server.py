@@ -4,6 +4,7 @@ import json
 import base64
 from diffiehellman.diffiehellman import DiffieHellman
 from bigint.big import *
+from Crypto.Cipher import AES
 #from Crypto import Random
 #from Crypto.Random import random
 #from Crypto.PublicKey import ElGamal
@@ -39,16 +40,17 @@ class MessageHandler(asyncore.dispatcher_with_send):
         self.name = 0
         self.Key = DiffieHellman()
         self.Key.generate_public_key()
-        #self.aesKey = ''
-        #self.difKey = 0
+        self.cipher = 0
 
     def handle_read(self):
         data = self.recv(4096).decode('utf-8')
         if data:
             print("loginfo: " + data)
-            if self.Key:
-                pass
-            j = json.loads(data)
+
+            if self.cipher:
+                j = json.loads(self.cipher.decrypt(data))
+            else:
+                j = json.loads(data)
 
             if j["action"] == "register":
                 try:
@@ -94,6 +96,7 @@ class MessageHandler(asyncore.dispatcher_with_send):
                     self.send(json.dumps({"action": "handshake", "status": "HANDSHAKE_OK", "data": {"pubkey": int_to_base_str(self.Key.public_key)}}).encode())
                     print("pubkey: " + str(base_str_to_int(j["data"]["pubkey"])))
                     self.Key.generate_shared_secret(base_str_to_int(j["data"]["pubkey"]))
+                    self.cipher = AES.new(str(self.Key.shared_key).encode(), AES.MODE_CFB)
                 except Exception:
                     self.send(json.dumps({"action": "handshake", "status": "HANDSHAKE_ERR"}).encode())
                 #print(self.Key.public_key)
