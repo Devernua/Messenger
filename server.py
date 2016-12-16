@@ -84,8 +84,11 @@ class MessageHandler(asyncore.dispatcher_with_send):
                 #try
                 #self.Key = int(j["data"]["pubkey"])
                 #TODO: SUBSCRIBE and SIGN a PubKEY
-                self.send(json.dumps({"action": "handshake", "data": {"pubkey": str(self.Key.public_key)}}).encode())
-                self.Key.generate_shared_secret(int(j["data"]["pubkey"]))
+                try:
+                    self.send(json.dumps({"action": "handshake", "data": {"pubkey": str(self.Key.public_key)}}).encode())
+                    self.Key.generate_shared_secret(int(j["data"]["pubkey"]))
+                except Exception:
+                    self.send(json.dumps({"action": "handshake", "status": "HANDSHAKE_ERR"}))
                 #print(self.Key.public_key)
                 #print(int(str(self.Key.public_key)))
                 print("MY KEY: " + str(self.Key.public_key))

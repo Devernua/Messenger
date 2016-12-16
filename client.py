@@ -43,8 +43,6 @@ class MessangerClient(asyncore.dispatcher):
                 print("MY KEY: " + str(self.Key.public_key))
                 print("HIM KEY: " + str(int(j["data"]["pubkey"])))
                 print("SHARED KEY: " + str(self.Key.shared_key))
-                #self.difKey = key.generate_shared_secret(int(j["data"]['pubkey']), echo_return_key=True)
-                #print(self.difKey)
                 #TODO:check al gamal
                 #TODO:cut difkey end chifer by AES
                 self.buffer = json.dumps({'action': 'auth', 'data': {'login': login, 'pass': password}}).encode('utf-8')
