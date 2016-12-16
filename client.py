@@ -8,6 +8,7 @@ from Crypto.Random import random
 from Crypto.PublicKey import ElGamal
 from Crypto.Util.number import GCD
 from Crypto.Hash import SHA
+import base64
 
 #TODO:remember ELGamalKey
 #key = DiffieHellman()
@@ -25,7 +26,7 @@ class MessangerClient(asyncore.dispatcher):
         self.Key = DiffieHellman()
         self.Key.generate_public_key()
         #self.buffer = json.dumps({'action': 'auth', 'data': {'login': login, 'pass': password}}).encode('utf-8')
-        self.buffer = json.dumps({'action': 'handshake', 'data': {'pubkey': str(self.Key.public_key)}}).encode('utf-8')
+        self.buffer = json.dumps({'action': 'handshake', 'data': {'pubkey': str(base64.b64encode(bytes(str(self.Key.public_key), 'ascii')))}}).encode()
 
     def handle_connect(self):
         pass
@@ -39,9 +40,9 @@ class MessangerClient(asyncore.dispatcher):
             print(data)
             j = json.loads(data)
             if (j["action"] == "handshake"):
-                self.Key.generate_shared_secret(int(j["data"]["pubkey"]))
+                self.Key.generate_shared_secret(int(base64.b64decode(j["data"]["pubkey"])))
                 print("MY KEY: " + str(self.Key.public_key))
-                print("HIM KEY: " + str(int(j["data"]["pubkey"])))
+                print("HIM KEY: " + str(int(base64.b64decode(j["data"]["pubkey"]))))
                 print("SHARED KEY: " + str(self.Key.shared_key))
                 #TODO:check al gamal
                 #TODO:cut difkey end chifer by AES

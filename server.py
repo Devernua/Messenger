@@ -1,6 +1,7 @@
 import asyncore
 import socket
 import json
+import base64
 from diffiehellman.diffiehellman import DiffieHellman
 #from Crypto import Random
 #from Crypto.Random import random
@@ -74,6 +75,9 @@ class MessageHandler(asyncore.dispatcher_with_send):
                     self.send(json.dumps({"action": "auth", "status": "AUTH_ERR"}).encode())
                     self.close()
 
+            elif j["action"] == "test":
+                s = j["data"].encode()
+                print(s)
             elif j["action"] == "message":
                 try:
                     clients[j["data"]["to"]].send(json.dumps({"action": "message", "data": {"from": self.name, "message": j["data"]["message"]}}).encode())
@@ -85,14 +89,15 @@ class MessageHandler(asyncore.dispatcher_with_send):
                 #self.Key = int(j["data"]["pubkey"])
                 #TODO: SUBSCRIBE and SIGN a PubKEY
                 try:
-                    self.send(json.dumps({"action": "handshake", "data": {"pubkey": str(self.Key.public_key)}}).encode())
+                    self.send(json.dumps({"action": "handshake", "status": "HANDSHAKE_OK", "data": {"pubkey": str(base64.b64encode(bytes(str(self.Key.public_key), 'ascii')))}}).encode())
+                    print("pubkey: " + str(int(base64.b64decode(j["data"]["pubkey"]))))
                     self.Key.generate_shared_secret(int(j["data"]["pubkey"]))
                 except Exception:
-                    self.send(json.dumps({"action": "handshake", "status": "HANDSHAKE_ERR"}))
+                    self.send(json.dumps({"action": "handshake", "status": "HANDSHAKE_ERR"}).encode())
                 #print(self.Key.public_key)
                 #print(int(str(self.Key.public_key)))
                 print("MY KEY: " + str(self.Key.public_key))
-                print("HIM KEY: " + str(int(j["data"]["pubkey"])))
+                print("HIM KEY: " + str(int(base64.b64decode(j["data"]["pubkey"]))))
                 print("SHARED KEY: " + str(self.Key.shared_key))
                     # self.send(json.dumps({"action": "handshake", "data": {"pubkey": str(DiffiKey.public_key), "signR": SignR, "signS": SignS}}).encode())
                 #except Exception:
