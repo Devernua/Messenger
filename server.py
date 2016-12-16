@@ -59,12 +59,12 @@ class MessageHandler(asyncore.dispatcher_with_send):
                             users[j["data"]["login"]] = j["data"]["pass"]
                             self.name = j["data"]["login"]
                             clients[self.name] = self
-                            self.send(json.dumps({"action": "register", "status": "AUTH_OK"}).encode())
+                            self.send(self.cipher.encrypt(json.dumps({"action": "register", "status": "AUTH_OK"})))
                     else:
-                        self.send(json.dumps({"action": "register", "status": "AUTH_ERR"}).encode())
+                        self.send(self.cipher.encrypt(json.dumps({"action": "register", "status": "AUTH_ERR"})))
                         self.close()
                 except Exception:
-                    self.send(json.dumps({"action": "register", "status": "AUTH_ERR"}).encode())
+                    self.send(self.cipher.encrypt(json.dumps({"action": "register", "status": "AUTH_ERR"})))
                     self.close()
 
             elif j["action"] == "auth" and self.cipher:
@@ -74,10 +74,10 @@ class MessageHandler(asyncore.dispatcher_with_send):
                         clients[self.name] = self
                         self.send(self.cipher.encrypt(json.dumps({"action": "auth", "status": "AUTH_OK"})))
                     else:
-                        self.send(json.dumps({"action": "auth", "status": "AUTH_ERR"}).encode())
+                        self.send(self.cipher.encrypt(json.dumps({"action": "auth", "status": "AUTH_ERR"})))
                         self.close()
                 except Exception:
-                    self.send(json.dumps({"action": "auth", "status": "AUTH_ERR"}).encode())
+                    self.send(self.cipher.encrypt(json.dumps({"action": "auth", "status": "AUTH_ERR"})))
                     self.close()
 
             elif j["action"] == "test":
@@ -85,9 +85,10 @@ class MessageHandler(asyncore.dispatcher_with_send):
                 print(s)
             elif j["action"] == "message" and self.cipher:
                 try:
-                    clients[j["data"]["to"]].send(json.dumps({"action": "message", "data": {"from": self.name, "message": j["data"]["message"]}}).encode())
+                    chel = clients[j["data"]["to"]]
+                    chel.send(chel.cipher.encrypt(json.dumps({"action": "message", "data": {"from": self.name, "message": j["data"]["message"]}})))
                 except Exception:
-                    self.send(json.dumps({"action": "message", "status": "MESSAGE_ERR"}).encode())
+                    self.send(self.cipher.encrypt(json.dumps({"action": "message", "status": "MESSAGE_ERR"})))
 
             elif j["action"] == "handshake":
                 #try
