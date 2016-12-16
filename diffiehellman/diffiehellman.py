@@ -46,37 +46,31 @@ except(AttributeError, ImportError):
 class DiffieHellman:
     """
     Implements the Diffie-Hellman key exchange protocol.
-
     """
 
     def __init__(self,
-                 pub=0,
-                 private=0,
                  group=18,
-                 key_length=256):
+                 key_length=640):
 
         self.key_length = max(200, key_length)
         self.generator = PRIMES[group]["generator"]
         self.prime = PRIMES[group]["prime"]
-        self.public_key = pub
-        self.private_key = private
 
     def generate_private_key(self):
         """
-        Generates a private key of key_length bits and attaches it to the object as the private_key variable.
-
+        Generates a private key of key_length bits and attaches it to the object as the __private_key variable.
         :return: void
         :rtype: void
         """
         key_length = self.key_length // 8 + 8
-
+        key = 0
 
         try:
             key = int.from_bytes(rng(key_length), byteorder='big')
         except:
             key = int(hex(rng(key_length)), base=16)
 
-        self.private_key = key
+        self.__private_key = key
 
     def verify_public_key(self, other_public_key):
         return self.prime - 1 > other_public_key > 2 and pow(other_public_key, (self.prime - 1) // 2, self.prime) == 1
@@ -85,20 +79,17 @@ class DiffieHellman:
     def generate_public_key(self):
         """
         Generates public key.
-
         :return: void
         :rtype: void
         """
         self.public_key = pow(self.generator,
-                              self.private_key,
+                              self.__private_key,
                               self.prime)
-        return self
 
     @requires_private_key
     def generate_shared_secret(self, other_public_key, echo_return_key=False):
         """
         Generates shared secret from the other party's public key.
-
         :param other_public_key: Other party's public key
         :type other_public_key: int
         :param echo_return_key: Echo return shared key
@@ -110,7 +101,7 @@ class DiffieHellman:
             raise MalformedPublicKey
 
         self.shared_secret = pow(other_public_key,
-                                 self.private_key,
+                                 self.__private_key,
                                  self.prime)
 
         shared_secret_as_bytes = self.shared_secret.to_bytes(self.shared_secret.bit_length() // 8 + 1, byteorder='big')
@@ -119,7 +110,6 @@ class DiffieHellman:
         _h.update(bytes(shared_secret_as_bytes))
 
         self.shared_key = _h.hexdigest()
-        #self.shared_key = self.shared_secret
 
         if echo_return_key is True:
             return self.shared_key
