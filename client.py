@@ -12,10 +12,10 @@ from Crypto.Util.number import GCD
 from Crypto.Hash import SHA
 import base64
 
-#TODO:remember ELGamalKey
-#key = DiffieHellman()
-#key.generate_public_key()
-#print(key.public_key)
+ElGamalKey = ElGamal.construct((97876007283895611191945706438217835830283264987363181522362440407719068602587,
+                                52931492782774089032240858805384312244601143630200862182145989767835812439526,
+                                10510494267870926425420828279300334327548548361622046172269274495889301652492))
+
 
 class MessangerClient(asyncore.dispatcher):
 
@@ -40,18 +40,22 @@ class MessangerClient(asyncore.dispatcher):
     def handle_read(self):
         data = self.recv(4024).decode('utf-8')
         if data:
-            #print(data)
             if self.cipher is not None:
                 j = json.loads(self.cipher.decrypt(data))
             else:
                 j = json.loads(data)
             print(j)
-            #j = json.loads(data)
+
             if j["action"] == "handshake":
-                self.Key.generate_shared_secret(base_str_to_int(j["data"]["pubkey"]))
-                #print("MY KEY: " + str(self.Key.public_key))
-                #print("HIM KEY: " + str(base_str_to_int(j["data"]["pubkey"])))
-                #print("SHARED KEY: " + str(self.Key.shared_key))
+                tmp = base_str_to_int(j["data"]["pubkey"])
+                h = SHA.new(j["data"]["pubkey"].encode()).digest()
+                self.Key.generate_shared_secret(tmp)
+                SignR = int(j["data"]["SignR"])
+                SignS = int(j["data"]["SignS"])
+
+                if not ElGamalKey.verify(h, (SignR, SignS)):
+                    raise("BAD SIGNATURE")
+
                 self.cipher = AESCipher(str(self.Key.shared_key).encode())
                 #TODO:check al gamal
                 #TODO:cut difkey end chifer by AES
@@ -76,9 +80,7 @@ class CmdlineClient(asyncore.file_dispatcher):
 
     def handle_read(self):
         s = self.recv(1024).decode('utf-8')
-        (to,msg) = s.split(':', 1)
-        #TODO:chifer by AES
-        #self.sender.buffer += json.dumps({"data": {"pubkey": str(key.public_key)}, "action": "handshake"}).encode()
+        (to, msg) = s.split(':', 1)
         self.sender.buffer += json.dumps({"data": {"message": msg, "to": to}, "action": "message"}).encode('utf-8')
 
 login = str(input())

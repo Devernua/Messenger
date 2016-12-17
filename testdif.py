@@ -32,7 +32,7 @@ from bigint.big import *
 
 key = b'1234567890123456'
 chiper = AESCipher(key)
-enc = chiper.encrypt("HUINA")
+enc = chiper.encrypt("hui")
 print(enc)
 print(chiper.decrypt(enc))
 #print(pack_bigint(int.from_bytes(rng(16), byteorder='big')))
