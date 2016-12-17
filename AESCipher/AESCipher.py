@@ -1,6 +1,7 @@
 import base64
 from Crypto.Cipher import AES
 from Crypto import Random
+from bigint.big import *
 
 BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
@@ -15,10 +16,13 @@ class AESCipher:
         raw = pad(raw)
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(self.key, AES.MODE_CFB, iv)
-        return base64.standard_b64encode(iv + cipher.encrypt(raw))
+        #return base64.standard_b64encode(iv + cipher.encrypt(raw))
+        return str(unpack_bigint(iv + cipher.encrypt(raw))).encode()
 
     def decrypt(self, enc):
-            enc = base64.standard_b64decode(enc)
+            enc = bytes(pack_bigint(int(enc)))
+            #enc = base64.standard_b64decode(enc)
             iv = enc[:16]
             cipher = AES.new(self.key, AES.MODE_CFB, iv)
             return unpad(cipher.decrypt(enc[16:])).decode()
+            r#eturn cipher.decrypt(enc[16:]).decode()
