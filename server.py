@@ -44,7 +44,8 @@ class MessageHandler(asyncore.dispatcher_with_send):
         self.cipher = None
 
     def handle_read(self):
-        data = self.recv(4096).decode('utf-8')
+        data = self.recv(4096).decode()
+        print("data: ", data)
         if data:
             #print("loginfo: " + data)
 
