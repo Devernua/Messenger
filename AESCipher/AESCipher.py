@@ -13,7 +13,7 @@ class AESCipher:
         self.key = key
 
     def encrypt(self, raw):
-        raw = pad(raw)
+        #raw = pad(raw)
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(self.key, AES.MODE_CFB, iv)
         #return base64.standard_b64encode(iv + cipher.encrypt(raw))
@@ -24,5 +24,5 @@ class AESCipher:
             #enc = base64.standard_b64decode(enc)
             iv = enc[:16]
             cipher = AES.new(self.key, AES.MODE_CFB, iv)
-            return unpad(cipher.decrypt(enc[16:])).decode()
-            r#eturn cipher.decrypt(enc[16:]).decode()
+            #return unpad(cipher.decrypt(enc[16:])).decode()
+            return cipher.decrypt(enc[16:]).decode()
