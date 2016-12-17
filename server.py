@@ -1,12 +1,9 @@
 import asyncore
 import socket
 import json
-import base64
 from diffiehellman.diffiehellman import DiffieHellman
 from bigint.big import *
-#from Crypto.Cipher import AES
 from AESCipher.AESCipher import AESCipher
-from Crypto import Random
 from Crypto.Random import random
 from Crypto.PublicKey import ElGamal
 from Crypto.Util.number import GCD

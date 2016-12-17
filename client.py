@@ -5,12 +5,8 @@ import sys
 from diffiehellman.diffiehellman import DiffieHellman
 from bigint.big import *
 from AESCipher.AESCipher import AESCipher
-from Crypto import Random
-from Crypto.Random import random
 from Crypto.PublicKey import ElGamal
-from Crypto.Util.number import GCD
 from Crypto.Hash import SHA
-import base64
 
 ElGamalKey = ElGamal.construct((97876007283895611191945706438217835830283264987363181522362440407719068602587,
                                 52931492782774089032240858805384312244601143630200862182145989767835812439526,
@@ -27,7 +23,6 @@ class MessangerClient(asyncore.dispatcher):
         self.password = password
         self.Key = DiffieHellman()
         self.Key.generate_public_key()
-        #self.buffer = json.dumps({'action': 'auth', 'data': {'login': login, 'pass': password}}).encode('utf-8')
         self.buffer = json.dumps({'action': 'handshake', 'data': {'pubkey': int_to_base_str(self.Key.public_key)}}).encode()
         self.cipher = None
 
@@ -57,8 +52,6 @@ class MessangerClient(asyncore.dispatcher):
                     raise("BAD SIGNATURE")
 
                 self.cipher = AESCipher(str(self.Key.shared_key).encode())
-                #TODO:check al gamal
-                #TODO:cut difkey end chifer by AES
                 self.buffer = json.dumps({'action': 'auth', 'data': {'login': login, 'pass': password}}).encode('utf-8')
 
     def writable(self):
