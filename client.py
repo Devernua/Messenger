@@ -86,7 +86,7 @@ class CmdlineClient(asyncore.file_dispatcher):
 login = str(input())
 password = str(input())
 
-client = MessangerClient('', 7777, login, password)
+client = MessangerClient('172.20.10.3', 7777, login, password)
 CmdlineClient(client, sys.stdin)
 
 asyncore.loop()
